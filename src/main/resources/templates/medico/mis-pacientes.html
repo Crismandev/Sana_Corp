@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Pacientes - Médico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .patient-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        .patient-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .info-card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #6f42c1;
+        }
+        .badge-estado {
+            font-size: 0.8em;
+            padding: 0.4em 0.8em;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- HEADER CON DISEÑO HOMOGENIZADO -->
+        <div class="dashboard-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-users me-2"></i>Mis Pacientes</h1>
+                    <p class="lead mb-0">Gestión de pacientes atendidos - Vista Médico</p>
+                    <p class="mb-0" th:if="${medico != null}">
+                        Dr. <span th:text="${medico.nombreCompleto}"></span> - 
+                        <span class="badge bg-light text-dark" th:text="${medico.especialidadNombre}"></span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <!-- SOLO DEJAR ESTE BOTÓN -->
+                    <a th:href="@{/medico/perfil}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-1"></i>Volver al Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ESTADÍSTICAS CON DISEÑO HOMOGENIZADO -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${totalPacientes}" class="text-primary">0</h2>
+                        <p class="card-text">Total Pacientes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${totalPacientes}" class="text-success">0</h2>
+                        <p class="card-text">Pacientes Únicos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${#dates.format(new java.util.Date(), 'dd/MM')}" class="text-info">Fecha</h2>
+                        <p class="card-text">Hoy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESUMEN DE PACIENTES -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Resumen de Pacientes Atendidos
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Has atendido a <strong th:text="${totalPacientes}">0</strong> pacientes únicos en total.
+                    <span th:if="${totalPacientes > 0}" class="text-success">
+                        <i class="fas fa-check-circle me-1"></i>Excelente trabajo profesional
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <!-- LISTA DE PACIENTES -->
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>Lista de Pacientes Atendidos
+                </h5>
+                <span class="badge bg-light text-dark" th:text="'Total: ' + ${totalPacientes}">Total: 0</span>
+            </div>
+            <div class="card-body">
+                <!-- Mensaje si no hay pacientes -->
+                <div th:if="${pacientes == null or pacientes.empty}" class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No has atendido pacientes aún</h4>
+                    <p class="text-muted">Los pacientes que atiendas aparecerán en esta lista</p>
+                    <a th:href="@{/medico/agenda}" class="btn btn-primary">
+                        <i class="fas fa-calendar-alt me-1"></i>Ir a Mi Agenda
+                    </a>
+                </div>
+
+                <!-- Lista de pacientes en tabla -->
+                <div th:if="${pacientes != null and not pacientes.empty}">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Paciente</th>
+                                    <th>DNI</th>
+                                    <th>Seguro Médico</th>
+                                    <th>Contacto</th>
+                                    <th>Última Consulta</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="paciente : ${pacientes}">
+                                    <td>
+                                        <strong th:text="${paciente.nombreCompleto}">Nombre del Paciente</strong>
+                                    </td>
+                                    <td th:text="${paciente.dni}">DNI</td>
+                                    <td>
+                                        <span th:if="${paciente.seguroMedico != null and !paciente.seguroMedico.isEmpty()}" 
+                                              class="badge bg-success badge-estado" th:text="${paciente.seguroMedico}">
+                                        </span>
+                                        <span th:if="${paciente.seguroMedico == null or paciente.seguroMedico.isEmpty()}" 
+                                              class="badge bg-warning badge-estado">
+                                            Sin seguro
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${paciente.persona != null and paciente.persona.telefono != null}"
+                                              th:text="${paciente.persona.telefono}">Teléfono</span>
+                                        <span th:if="${paciente.persona == null or paciente.persona.telefono == null}"
+                                              class="text-muted">No disponible</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <span th:text="${#dates.format(new java.util.Date(), 'dd/MM/yyyy')}">Fecha</span>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" 
+                                                    th:title="'Contactar a ' + ${paciente.nombreCompleto}">
+                                                <i class="fas fa-phone"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info" 
+                                                    th:title="'Ver historial de ' + ${paciente.nombreCompleto}">
+                                                <i class="fas fa-file-medical"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success" 
+                                                    th:title="'Programar cita con ' + ${paciente.nombreCompleto}">
+                                                <i class="fas fa-calendar-plus"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCIONES RÁPIDAS -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5><i class="fas fa-calendar-plus text-success me-2"></i>Nueva Cita</h5>
+                        <p class="text-muted">Programar una nueva consulta médica</p>
+                        <button class="btn btn-success" onclick="simularAccion('Nueva cita', 'Sistema')">
+                            <i class="fas fa-plus me-1"></i>Crear Cita
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5><i class="fas fa-sync-alt text-primary me-2"></i>Actualizar</h5>
+                        <p class="text-muted">Actualizar la lista de pacientes</p>
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-sync-alt me-1"></i>Actualizar Lista
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INFORMACIÓN DEL SISTEMA CON DISEÑO HOMOGENIZADO -->
+        <div class="card info-card mt-4">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle text-info me-2"></i>Información del Sistema</h6>
+                <p class="mb-0 small text-muted">
+                    <strong>Médico:</strong> <span th:text="${medico != null ? medico.nombreCompleto : 'Médico'}"></span> | 
+                    <strong>Especialidad:</strong> <span th:text="${medico != null ? medico.especialidadNombre : 'N/A'}"></span> |
+                    <strong>Pacientes cargados:</strong> <span th:text="${totalPacientes}"></span> |
+                    <strong>Última actualización:</strong> <span th:text="${#dates.format(new java.util.Date(), 'dd/MM/yyyy HH:mm')}"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Efectos de animación
+        document.addEventListener('DOMContentLoaded', function() {
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            // Efecto para filas de la tabla
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach((row, index) => {
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    row.style.transition = 'all 0.5s ease';
+                    row.style.opacity = '1';
+                    row.style.transform = 'translateX(0)';
+                }, index * 100 + 300);
+            });
+        });
+
+        // Simular acciones de botones
+        function simularAccion(accion, paciente) {
+            alert(`Acción: ${accion}\nPaciente: ${paciente}\n\nEsta funcionalidad está en desarrollo.`);
+            return false;
+        }
+
+        // Event listeners para botones de acciones
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-outline-primary')) {
+                const fila = e.target.closest('tr');
+                const paciente = fila.querySelector('strong').textContent;
+                simularAccion('Contactar', paciente);
+            }
+            else if (e.target.closest('.btn-outline-info')) {
+                const fila = e.target.closest('tr');
+                const paciente = fila.querySelector('strong').textContent;
+                simularAccion('Ver historial', paciente);
+            }
+            else if (e.target.closest('.btn-outline-success')) {
+                const fila = e.target.closest('tr');
+                const paciente = fila.querySelector('strong').textContent;
+                simularAccion('Programar cita', paciente);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Agenda - Médico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .agenda-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .badge-estado {
+            font-size: 0.8em;
+            padding: 0.4em 0.8em;
+        }
+        .filtros-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .cita-completada {
+            background-color: #d4edda !important;
+        }
+        .cita-cancelada {
+            background-color: #f8d7da !important;
+        }
+        .cita-pendiente {
+            background-color: #fff3cd !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="agenda-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-calendar-alt me-2"></i>Mi Agenda</h1>
+                    <p class="lead mb-0">Gestión de citas y consultas programadas</p>
+                    <p class="mb-0" th:if="${medico != null}">
+                        Dr. <span th:text="${medico.nombreCompleto}"></span> - 
+                        <span class="badge bg-light text-dark" th:text="${medico.especialidadNombre}"></span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/medico/perfil}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-1"></i>Volver al Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${citas != null ? citas.size() : 0}" class="text-primary">0</h2>
+                        <p class="card-text">Total Citas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${citasPendientes != null ? citasPendientes : 0}" class="text-warning">0</h2>
+                        <p class="card-text">Citas Pendientes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${citasCompletadas != null ? citasCompletadas : 0}" class="text-success">0</h2>
+                        <p class="card-text">Citas Completadas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${citasCanceladas != null ? citasCanceladas : 0}" class="text-danger">0</h2>
+                        <p class="card-text">Citas Canceladas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros y Búsqueda -->
+        <div class="filtros-container">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label for="filtroEstado" class="form-label">Filtrar por Estado:</label>
+                    <select class="form-select" id="filtroEstado">
+                        <option value="TODAS">Todas las citas</option>
+                        <option value="PENDIENTE">Pendientes</option>
+                        <option value="PROGRAMADA">Programadas</option>
+                        <option value="COMPLETADA">Completadas</option>
+                        <option value="ATENDIDA">Atendidas</option>
+                        <option value="CANCELADA">Canceladas</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="filtroFecha" class="form-label">Filtrar por Fecha:</label>
+                    <input type="date" class="form-control" id="filtroFecha">
+                </div>
+                <div class="col-md-4">
+                    <label for="buscarPaciente" class="form-label">Buscar Paciente:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="buscarPaciente" placeholder="Nombre del paciente...">
+                        <button class="btn btn-primary" type="button" id="btnBuscar">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Citas -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>Lista de Citas
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Mensaje si no hay citas -->
+                <div th:if="${citas == null or citas.empty}" class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No hay citas programadas</h4>
+                    <p class="text-muted">No se encontraron citas en tu agenda.</p>
+                </div>
+
+                <!-- Lista de citas -->
+                <div th:if="${citas != null and not citas.empty}">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha y Hora</th>
+                                    <th>Paciente</th>
+                                    <th>Motivo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="cita : ${citas}" th:id="'cita-' + ${citaStat.index}">
+                                    <td>
+                                        <span th:text="${#dates.format(cita.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                                    </td>
+                                    <td>
+                                        <strong th:text="${cita.paciente != null ? cita.paciente.nombreCompleto : 'N/A'}">Paciente</strong>
+                                        <br>
+                                        <small class="text-muted" th:if="${cita.paciente != null and cita.paciente.persona != null}" 
+                                               th:text="${cita.paciente.persona.dni}">DNI</small>
+                                    </td>
+                                    <td th:text="${cita.motivo != null ? cita.motivo : 'Consulta médica'}">Motivo</td>
+                                    <td>
+                                        <span th:switch="${cita.estado.name()}">
+                                            <span th:case="'PENDIENTE'" class="badge bg-warning badge-estado">Pendiente</span>
+                                            <span th:case="'PROGRAMADA'" class="badge bg-info badge-estado">Programada</span>
+                                            <span th:case="'COMPLETADA'" class="badge bg-success badge-estado">Completada</span>
+                                            <span th:case="'ATENDIDA'" class="badge bg-success badge-estado">Atendida</span>
+                                            <span th:case="'CANCELADA'" class="badge bg-danger badge-estado">Cancelada</span>
+                                            <span th:case="*" class="badge bg-secondary badge-estado" th:text="${cita.estado.name()}">Estado</span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary btn-atender" 
+                                                    th:if="${cita.estado.name() == 'PENDIENTE' or cita.estado.name() == 'PROGRAMADA'}">
+                                                <i class="fas fa-stethoscope"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success btn-completar" 
+                                                    th:if="${cita.estado.name() == 'PENDIENTE' or cita.estado.name() == 'PROGRAMADA'}">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-cancelar" 
+                                                    th:if="${cita.estado.name() == 'PENDIENTE' or cita.estado.name() == 'PROGRAMADA'}">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info btn-detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5><i class="fas fa-plus-circle text-success me-2"></i>Nueva Cita</h5>
+                        <p class="text-muted">Programar una nueva cita con un paciente</p>
+                        <button class="btn btn-success" id="btnNuevaCita">
+                            <i class="fas fa-plus me-1"></i>Crear Cita
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5><i class="fas fa-sync-alt text-primary me-2"></i>Sincronizar</h5>
+                        <p class="text-muted">Actualizar la agenda con los últimos cambios</p>
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-sync-alt me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Sistema -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle text-info me-2"></i>Información del Sistema</h6>
+                <p class="mb-0 small text-muted">
+                    <strong>Usuario:</strong> <span th:text="${medico != null ? medico.nombreCompleto : 'Médico'}"></span> | 
+                    <strong>Última actualización:</strong> <span th:text="${#dates.format(new java.util.Date(), 'dd/MM/yyyy HH:mm')}"></span> |
+                    <strong>Total de citas cargadas:</strong> <span th:text="${citas != null ? citas.size() : 0}"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Filtros de búsqueda
+        document.addEventListener('DOMContentLoaded', function() {
+            const filtroEstado = document.getElementById('filtroEstado');
+            const filtroFecha = document.getElementById('filtroFecha');
+            const buscarPaciente = document.getElementById('buscarPaciente');
+            const btnBuscar = document.getElementById('btnBuscar');
+            const btnNuevaCita = document.getElementById('btnNuevaCita');
+            
+            // Establecer fecha actual como valor por defecto
+            const today = new Date().toISOString().split('T')[0];
+            filtroFecha.value = today;
+            
+            // Aplicar colores iniciales
+            aplicarColoresEstados();
+            
+            // Funcionalidad de filtros
+            function aplicarFiltros() {
+                const estado = filtroEstado.value;
+                const fecha = filtroFecha.value;
+                const paciente = buscarPaciente.value.toLowerCase();
+                
+                console.log('Aplicando filtros:', { estado, fecha, paciente });
+                
+                // Filtrar filas de la tabla
+                const filas = document.querySelectorAll('tbody tr');
+                filas.forEach(fila => {
+                    const estadoFila = fila.querySelector('.badge').textContent.trim().toLowerCase();
+                    const nombrePaciente = fila.querySelector('strong').textContent.toLowerCase();
+                    const fechaCita = fila.querySelector('td:first-child').textContent;
+                    
+                    let mostrar = true;
+                    
+                    if (estado !== 'TODAS' && !estadoFila.includes(estado.toLowerCase())) {
+                        mostrar = false;
+                    }
+                    
+                    if (paciente && !nombrePaciente.includes(paciente)) {
+                        mostrar = false;
+                    }
+                    
+                    if (fecha) {
+                        const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES');
+                        if (!fechaCita.includes(fechaFormateada)) {
+                            mostrar = false;
+                        }
+                    }
+                    
+                    fila.style.display = mostrar ? '' : 'none';
+                });
+            }
+            
+            // Event listeners
+            filtroEstado.addEventListener('change', aplicarFiltros);
+            filtroFecha.addEventListener('change', aplicarFiltros);
+            buscarPaciente.addEventListener('input', aplicarFiltros);
+            btnBuscar.addEventListener('click', aplicarFiltros);
+            
+            // Botón nueva cita
+            btnNuevaCita.addEventListener('click', function() {
+                simularAccion('Crear nueva cita', 'Sistema');
+            });
+            
+            // Event listeners para botones de acciones
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.btn-atender')) {
+                    const fila = e.target.closest('tr');
+                    const paciente = fila.querySelector('strong').textContent;
+                    simularAccion('Atender', paciente);
+                }
+                else if (e.target.closest('.btn-completar')) {
+                    const fila = e.target.closest('tr');
+                    const paciente = fila.querySelector('strong').textContent;
+                    simularAccion('Completar', paciente);
+                }
+                else if (e.target.closest('.btn-cancelar')) {
+                    const fila = e.target.closest('tr');
+                    const paciente = fila.querySelector('strong').textContent;
+                    simularAccion('Cancelar', paciente);
+                }
+                else if (e.target.closest('.btn-detalles')) {
+                    const fila = e.target.closest('tr');
+                    const paciente = fila.querySelector('strong').textContent;
+                    simularAccion('Ver detalles', paciente);
+                }
+            });
+        });
+        
+        // Aplicar colores a las filas según el estado
+        function aplicarColoresEstados() {
+            const filas = document.querySelectorAll('tbody tr');
+            filas.forEach(fila => {
+                const estado = fila.querySelector('.badge').textContent.trim();
+                
+                // Remover clases anteriores
+                fila.classList.remove('cita-completada', 'cita-cancelada', 'cita-pendiente');
+                
+                // Aplicar nueva clase según estado
+                if (estado === 'Completada' || estado === 'Atendida') {
+                    fila.classList.add('cita-completada');
+                } else if (estado === 'Cancelada') {
+                    fila.classList.add('cita-cancelada');
+                } else if (estado === 'Pendiente' || estado === 'Programada') {
+                    fila.classList.add('cita-pendiente');
+                }
+            });
+        }
+        
+        // Simular acciones de botones
+        function simularAccion(accion, paciente) {
+            alert(`Acción: ${accion}\nPaciente: ${paciente}\n\nEsta funcionalidad está en desarrollo.`);
+            return false;
+        }
+    </script>
+</body>
+</html>

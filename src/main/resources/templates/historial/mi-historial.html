@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Historial Médico - Paciente</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .action-card {
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .info-card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #6f42c1;
+        }
+        .profile-info-card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #007bff;
+        }
+        .historial-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        .historial-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .badge-estado {
+            font-size: 0.8em;
+            padding: 0.4em 0.8em;
+        }
+        .archivo-badge {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .archivo-badge:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- HEADER CON DISEÑO HOMOGENIZADO -->
+        <div class="dashboard-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-file-medical me-2"></i>Mi Historial Médico</h1>
+                    <p class="lead mb-0">Registro completo de todas tus consultas y diagnósticos</p>
+                    <p th:if="${paciente != null}">
+                        <span class="badge bg-light text-dark" th:text="'Paciente: ' + ${paciente.nombreCompleto}"></span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/paciente/perfil}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-1"></i>Volver al Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- INFORMACIÓN DEL PACIENTE CON DISEÑO HOMOGENIZADO -->
+        <div class="card profile-info-card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-id-card me-2"></i>Información del Paciente
+                </h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${paciente != null}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nombre Completo:</strong> 
+                                <span th:text="${paciente.nombreCompleto}"></span>
+                            </p>
+                            <p><strong>DNI:</strong> 
+                                <span th:text="${paciente.dni}"></span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Seguro Médico:</strong> 
+                                <span th:if="${paciente.seguroMedico != null and !paciente.seguroMedico.isEmpty()}" 
+                                      class="badge bg-success" th:text="${paciente.seguroMedico}">
+                                </span>
+                                <span th:if="${paciente.seguroMedico == null or paciente.seguroMedico.isEmpty()}" 
+                                      class="badge bg-warning">
+                                    Sin seguro médico
+                                </span>
+                            </p>
+                            <p><strong>Total de Registros:</strong> 
+                                <span class="badge bg-info" th:text="${historial != null ? historial.size() : 0}">0</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ESTADÍSTICAS RÁPIDAS CON DISEÑO HOMOGENIZADO -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${historial != null ? historial.size() : 0}" class="text-primary">0</h2>
+                        <p class="card-text">Total Registros</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${consultasRecientes != null ? consultasRecientes : 0}" class="text-warning">0</h2>
+                        <p class="card-text">Últimos 30 días</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${registrosConArchivos != null ? registrosConArchivos : 0}" class="text-success">0</h2>
+                        <p class="card-text">Con Archivos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <h2 th:text="${especialidades != null ? especialidades : 0}" class="text-info">0</h2>
+                        <p class="card-text">Especialidades</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCIONES RÁPIDAS -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card action-card h-100">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-calendar-plus fa-3x text-success"></i>
+                                </div>
+                                <h5 class="card-title">Nueva Cita</h5>
+                                <p class="card-text">Programa una nueva consulta médica</p>
+                                <a th:href="@{/citas/nueva}" class="btn btn-success">
+                                    <i class="fas fa-plus me-1"></i>Programar Cita
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card action-card h-100">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-print fa-3x text-secondary"></i>
+                                </div>
+                                <h5 class="card-title">Exportar Historial</h5>
+                                <p class="card-text">Descarga tu historial completo</p>
+                                <a th:href="@{#}" class="btn btn-secondary">
+                                    <i class="fas fa-download me-1"></i>Descargar PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card action-card h-100">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-search fa-3x text-info"></i>
+                                </div>
+                                <h5 class="card-title">Buscar Médicos</h5>
+                                <p class="card-text">Encuentra especialistas disponibles</p>
+                                <a th:href="@{/paciente/buscar-medicos}" class="btn btn-info">
+                                    <i class="fas fa-search me-1"></i>Buscar Especialistas
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENSAJES DEL SISTEMA -->
+        <div th:if="${param.exito}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>Información actualizada correctamente
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${param.exportado}" class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle me-2"></i>Historial exportado correctamente
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- LISTA DE HISTORIAL MÉDICO -->
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>Registros Médicos
+                </h5>
+                <span class="badge bg-light text-dark" th:text="'Total: ' + ${historial != null ? historial.size() : 0}">Total: 0</span>
+            </div>
+            <div class="card-body">
+                <!-- Mensaje si no hay historial -->
+                <div th:if="${historial == null or historial.empty}" class="text-center py-5">
+                    <i class="fas fa-file-medical-alt fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No hay registros médicos</h4>
+                    <p class="text-muted">Tu historial médico aparecerá aquí después de tus consultas</p>
+                    <a th:href="@{/citas/nueva}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Programar Mi Primera Consulta
+                    </a>
+                </div>
+
+                <!-- Lista de historial médico -->
+                <div th:if="${historial != null and not historial.empty}">
+                    <div class="row">
+                        <div class="col-12" th:each="registro : ${historial}">
+                            <div class="card historial-card">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-user-md me-1"></i>
+                                        <span th:text="${registro.nombreMedico}">Médico</span>
+                                    </h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Registrado: <span th:text="${#dates.format(registro.fechaRegistro, 'dd/MM/yyyy')}"></span>
+                                    </small>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="mb-3">
+                                                <span class="badge bg-primary badge-estado" th:text="${registro.especialidadMedico}">Especialidad</span>
+                                            </div>
+                                            <p class="mb-2">
+                                                <strong><i class="fas fa-calendar-check me-1"></i>Fecha de consulta:</strong> 
+                                                <span th:if="${registro.fechaCita != null}" 
+                                                      th:text="${#dates.format(registro.fechaCita, 'dd/MM/yyyy')}">Fecha</span>
+                                                <span th:if="${registro.fechaCita == null}" class="text-muted">No especificada</span>
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong><i class="fas fa-stethoscope me-1"></i>Motivo:</strong> 
+                                                <span th:text="${registro.motivoCita}">Motivo</span>
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong><i class="fas fa-notes-medical me-1"></i>Notas médicas:</strong> 
+                                                <span th:text="${registro.notas}">Notas</span>
+                                            </p>
+                                            <div th:if="${registro.archivosAdjuntos != null}" class="mt-3">
+                                                <strong><i class="fas fa-paperclip me-1"></i>Archivos adjuntos:</strong> 
+                                                <div class="mt-1">
+                                                    <span th:each="archivo : ${registro.archivosAdjuntos}" 
+                                                          class="badge bg-secondary archivo-badge me-1">
+                                                        <i class="fas fa-file-pdf me-1"></i>
+                                                        <span th:text="${archivo}">Archivo</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <div class="d-flex flex-column h-100 justify-content-between">
+                                                <div>
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check-circle me-1"></i>Completada
+                                                    </span>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <button class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye me-1"></i>Ver Detalles
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INFORMACIÓN DEL SISTEMA CON DISEÑO HOMOGENIZADO -->
+        <div class="card info-card mt-4">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle text-info me-2"></i>Información del Sistema</h6>
+                <p class="mb-0 small text-muted">
+                    <strong>Vista:</strong> Paciente - Mi Historial Médico | 
+                    <strong>Paciente:</strong> <span th:text="${paciente != null ? paciente.nombreCompleto : 'No registrado'}"></span> |
+                    <strong>Registros cargados:</strong> <span th:text="${historial != null ? historial.size() : 0}"></span> |
+                    <strong>Última actualización:</strong> <span th:text="${#dates.format(new java.util.Date(), 'dd/MM/yyyy HH:mm')}"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Efectos de animación
+        document.addEventListener('DOMContentLoaded', function() {
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            const actionCards = document.querySelectorAll('.action-card');
+            actionCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 150 + 400);
+            });
+
+            const historialCards = document.querySelectorAll('.historial-card');
+            historialCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100 + 600);
+            });
+
+            // Efecto para los badges de archivos
+            const archivoBadges = document.querySelectorAll('.archivo-badge');
+            archivoBadges.forEach(badge => {
+                badge.addEventListener('click', function() {
+                    alert('Descargando archivo: ' + this.textContent.trim());
+                });
+            });
+        });
+    </script>
+</body>
+</html>

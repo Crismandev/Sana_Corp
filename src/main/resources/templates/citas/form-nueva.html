@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Programar Nueva Cita</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fas fa-calendar-plus me-2"></i> Programar Nueva Cita</h4>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/citas/guardar}" method="post">
+
+                <!-- Paciente (oculto, prueba) -->
+                <input type="hidden" name="pacienteId" value="1"/>
+
+                <!-- Médico -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Médico</label>
+                    <select name="medicoId" class="form-select" required>
+                        <option value="">Selecciona un médico</option>
+                        <option th:each="medico : ${medicos}"
+                                th:value="${medico.id}"
+                                th:text="${medico.nombreCompleto + ' - ' + medico.especialidadNombre}"
+                                th:selected="${medico.id == medicoSeleccionadoId}"
+                                th:disabled="${medico.persona.usuario.estado == 0}">
+                        </option>
+                    </select>
+                    <div class="form-text">Solo se pueden seleccionar médicos disponibles.</div>
+                </div>
+
+                <!-- Fecha y Hora -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Fecha y Hora</label>
+                    <input type="datetime-local" name="fechaHora" class="form-control" required/>
+                </div>
+
+                <!-- Motivo -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Motivo</label>
+                    <textarea name="motivo" class="form-control" rows="3" required></textarea>
+                </div>
+
+                <!-- Botón -->
+                <div class="text-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i> Guardar Cita
+                    </button>
+                    <a th:href="@{/citas/mis-citas}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="https://kit.fontawesome.com/a2e0e6ad9b.js" crossorigin="anonymous"></script>
+</body>
+</html>
