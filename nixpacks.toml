@@ -1,0 +1,13 @@
+# ===============================================
+# NIXPACKS CONFIGURATION - RAILWAY DEPLOYMENT
+# ===============================================
+
+[phases.build]
+cmds = ["./mvnw clean package -DskipTests"]
+
+[phases.start]
+cmd = "java -jar target/sana-corp-secretario-0.0.1-SNAPSHOT.jar"
+
+[variables]
+SPRING_PROFILES_ACTIVE = "prod"
+JAVA_TOOL_OPTIONS = "-Xmx512m -Xms256m"

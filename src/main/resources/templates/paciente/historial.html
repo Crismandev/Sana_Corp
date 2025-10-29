@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Historial - Paciente</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="#">Hospital Virtual</a>
+                <div class="navbar-nav">
+                    <a class="nav-link" th:href="@{/paciente/perfil}">← Mi Perfil</a>
+                    <a class="nav-link active" th:href="@{/paciente/historial}">Mi Historial</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">📋 Mi Historial Médico</h4>
+            </div>
+            <div class="card-body text-center">
+                <div th:if="${paciente}">
+                    <h5 th:text="'Paciente: ' + ${paciente.persona.nombre} + ' ' + ${paciente.persona.apellido}"></h5>
+                    <p class="text-muted" th:text="${mensaje}">Funcionalidad de historial en desarrollo</p>
+                    
+                    <div class="alert alert-info mt-4">
+                        <h6>Próximamente:</h6>
+                        <ul class="list-unstyled">
+                            <li>✅ Ver consultas anteriores</li>
+                            <li>✅ Historial de diagnósticos</li>
+                            <li>✅ Recetas y tratamientos</li>
+                            <li>✅ Resultados de exámenes</li>
+                        </ul>
+                    </div>
+                    
+                    <a th:href="@{/paciente/perfil}" class="btn btn-secondary mt-3">Volver al Perfil</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

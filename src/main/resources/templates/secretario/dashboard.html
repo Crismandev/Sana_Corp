@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Secretario | Sana Corp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .card-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .card-stats .card-body {
+            padding: 1.5rem;
+        }
+        .stats-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .nav-link {
+            color: #495057;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(0,0,0,.075);
+        }
+        .badge-estado {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5 class="text-primary">
+                            <i class="bi bi-hospital"></i> Sana Corp
+                        </h5>
+                        <small class="text-muted">Módulo Secretario</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/secretario/dashboard">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/citas">
+                                <i class="bi bi-calendar-check"></i> Gestión de Citas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/pacientes">
+                                <i class="bi bi-people"></i> Gestión de Pacientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/citas/nueva">
+                                <i class="bi bi-plus-circle"></i> Nueva Cita
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/pacientes/nuevo">
+                                <i class="bi bi-person-plus"></i> Nuevo Paciente
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                                <i class="bi bi-arrow-clockwise"></i> Actualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertas -->
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card card-stats border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-muted mb-0">Citas Hoy</h5>
+                                        <span class="h2 font-weight-bold mb-0" th:text="${estadisticas?.citasHoy ?: 0}">0</span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="stats-icon">
+                                            <i class="bi bi-calendar-day"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-muted mb-0" style="color: rgba(255,255,255,0.8) !important;">Completadas</h5>
+                                        <span class="h2 font-weight-bold mb-0" th:text="${estadisticas?.citasCompletadasHoy ?: 0}">0</span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="stats-icon">
+                                            <i class="bi bi-check-circle"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: white;">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-muted mb-0" style="color: rgba(255,255,255,0.8) !important;">Canceladas</h5>
+                                        <span class="h2 font-weight-bold mb-0" th:text="${estadisticas?.citasCanceladasHoy ?: 0}">0</span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="stats-icon">
+                                            <i class="bi bi-x-circle"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #495057;">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-muted mb-0">Total Pacientes</h5>
+                                        <span class="h2 font-weight-bold mb-0" th:text="${totalPacientes ?: 0}">0</span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="stats-icon">
+                                            <i class="bi bi-people"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones Rápidas -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-lightning"></i> Acciones Rápidas
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <a href="/secretario/citas/nueva" class="btn btn-outline-primary w-100 py-3">
+                                            <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
+                                            Nueva Cita
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <a href="/secretario/pacientes/nuevo" class="btn btn-outline-success w-100 py-3">
+                                            <i class="bi bi-person-plus fs-4 d-block mb-2"></i>
+                                            Nuevo Paciente
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <a href="/secretario/citas" class="btn btn-outline-info w-100 py-3">
+                                            <i class="bi bi-calendar-check fs-4 d-block mb-2"></i>
+                                            Ver Citas
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <a href="/secretario/pacientes" class="btn btn-outline-warning w-100 py-3">
+                                            <i class="bi bi-people fs-4 d-block mb-2"></i>
+                                            Ver Pacientes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Citas de Hoy -->
+                <div class="row">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-calendar-day"></i> Citas de Hoy
+                                </h5>
+                                <a href="/secretario/citas" class="btn btn-sm btn-outline-primary">Ver todas</a>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${#lists.isEmpty(citasHoy)}" class="text-center text-muted py-4">
+                                    <i class="bi bi-calendar-x fs-1 d-block mb-3"></i>
+                                    <p>No hay citas programadas para hoy</p>
+                                </div>
+                                
+                                <div th:if="${!#lists.isEmpty(citasHoy)}" class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Hora</th>
+                                                <th>Paciente</th>
+                                                <th>Médico</th>
+                                                <th>Estado</th>
+                                                <th>Consultorio</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="cita : ${citasHoy}">
+                                                <td>
+                                                    <strong th:text="${#temporals.format(cita.fechaHora, 'HH:mm')}">09:00</strong>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <strong th:text="${cita.paciente.persona.nombre + ' ' + cita.paciente.persona.apellidoPaterno}">Juan Pérez</strong>
+                                                        <br>
+                                                        <small class="text-muted" th:text="${cita.paciente.persona.dni}">12345678</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <span th:text="${'Dr. ' + cita.medico.persona.nombre + ' ' + cita.medico.persona.apellidoPaterno}">Dr. García</span>
+                                                        <br>
+                                                        <small class="text-muted" th:text="${cita.medico.especialidad.nombreEspecialidad}">Cardiología</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-estado"
+                                                          th:classappend="${cita.estado.name() == 'PROGRAMADA'} ? 'bg-primary' : 
+                                                                         ${cita.estado.name() == 'CONFIRMADA'} ? 'bg-success' : 
+                                                                         ${cita.estado.name() == 'COMPLETADA'} ? 'bg-info' : 
+                                                                         ${cita.estado.name() == 'CANCELADA'} ? 'bg-danger' : 'bg-warning'"
+                                                          th:text="${cita.estado.name()}">PROGRAMADA</span>
+                                                </td>
+                                                <td th:text="${cita.consultorio.numeroConsultorio}">101</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Citas Próximas -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-calendar-week"></i> Próximas Citas
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${#lists.isEmpty(citasProximas)}" class="text-center text-muted py-4">
+                                    <i class="bi bi-calendar-plus fs-3 d-block mb-2"></i>
+                                    <p class="mb-0">No hay citas próximas</p>
+                                </div>
+                                
+                                <div th:if="${!#lists.isEmpty(citasProximas)}">
+                                    <div th:each="cita : ${citasProximas}" class="d-flex align-items-center mb-3 p-2 border rounded">
+                                        <div class="me-3">
+                                            <div class="text-center">
+                                                <div class="fw-bold text-primary" th:text="${#temporals.format(cita.fechaHora, 'dd')}">15</div>
+                                                <small class="text-muted" th:text="${#temporals.format(cita.fechaHora, 'MMM')}">Mar</small>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold" th:text="${cita.paciente.persona.nombre + ' ' + cita.paciente.persona.apellidoPaterno}">Juan Pérez</div>
+                                            <small class="text-muted" th:text="${#temporals.format(cita.fechaHora, 'HH:mm')} + ' - Dr. ' + ${cita.medico.persona.apellidoPaterno}">09:00 - Dr. García</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-refresh cada 5 minutos
+        setTimeout(function() {
+            location.reload();
+        }, 300000);
+    </script>
+</body>
+</html>

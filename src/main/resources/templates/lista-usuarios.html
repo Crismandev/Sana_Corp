@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Usuarios - Administrador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>🏥 Administrador - Gestión de Usuarios</h2>
+        
+        <!-- Mensaje de éxito -->
+        <div th:if="${param.exito}" class="alert alert-success alert-dismissible fade show">
+            ✅ Usuario guardado exitosamente!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Botón nuevo usuario -->
+        <a th:href="@{/admin/usuarios/nuevo}" class="btn btn-success mb-3">➕ Nuevo Usuario</a>
+
+        <!-- Tabla de usuarios -->
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="usuario : ${usuarios}">
+                            <td th:text="${usuario.id}"></td>
+                            <td th:text="${usuario.username}"></td>
+                            <td th:text="${usuario.email}"></td>
+                            <td>
+                                <span th:if="${usuario.estado == 1}" class="badge bg-success">Activo</span>
+                                <span th:if="${usuario.estado == 0}" class="badge bg-danger">Inactivo</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/usuarios/estado/{id}(id=${usuario.id})}" 
+                                   class="btn btn-warning btn-sm">
+                                   <span th:if="${usuario.estado == 1}">❌ Desactivar</span>
+                                   <span th:if="${usuario.estado == 0}">✅ Activar</span>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

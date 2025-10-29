@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Cita - Secretario | Sana Corp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .nav-link {
+            color: #495057;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .form-section {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .required {
+            color: #dc3545;
+        }
+        .patient-info {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5 class="text-primary">
+                            <i class="bi bi-hospital"></i> Sana Corp
+                        </h5>
+                        <small class="text-muted">Módulo Secretario</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/dashboard">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/citas">
+                                <i class="bi bi-calendar-check"></i> Gestión de Citas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/pacientes">
+                                <i class="bi bi-people"></i> Gestión de Pacientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/secretario/citas/nueva">
+                                <i class="bi bi-plus-circle"></i> Nueva Cita
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/pacientes/nuevo">
+                                <i class="bi bi-person-plus"></i> Nuevo Paciente
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-plus-circle"></i> Nueva Cita
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a href="/secretario/citas" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver a Citas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertas -->
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Formulario -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-plus"></i> Programar Nueva Cita
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/secretario/citas/nueva}" method="post" th:object="${cita}">
+                            
+                            <!-- Sección: Información del Paciente -->
+                            <div class="form-section">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="bi bi-person"></i> Información del Paciente
+                                </h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="buscarDni" class="form-label">
+                                            Buscar por DNI <span class="required">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="buscarDni" 
+                                                   placeholder="Ingrese DNI del paciente" maxlength="8">
+                                            <button type="button" class="btn btn-outline-primary" id="btnBuscarDni">
+                                                <i class="bi bi-search"></i> Buscar
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-muted">Ingrese el DNI para buscar al paciente</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="pacienteId" class="form-label">
+                                            Seleccionar Paciente <span class="required">*</span>
+                                        </label>
+                                        <select class="form-select" id="pacienteId" name="pacienteId" required>
+                                            <option value="">Seleccione un paciente</option>
+                                            <option th:each="paciente : ${pacientes}" 
+                                                    th:value="${paciente.idPaciente}"
+                                                    th:text="${paciente.persona.nombre + ' ' + paciente.persona.apellidoPaterno + ' ' + paciente.persona.apellidoMaterno + ' - DNI: ' + paciente.persona.dni}">
+                                                Juan Pérez García - DNI: 12345678
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Información del paciente seleccionado -->
+                                <div id="pacienteInfo" class="patient-info" style="display: none;">
+                                    <h6 class="fw-bold mb-2">
+                                        <i class="bi bi-info-circle"></i> Datos del Paciente
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><strong>Nombre:</strong> <span id="pacienteNombre"></span></p>
+                                            <p class="mb-1"><strong>DNI:</strong> <span id="pacienteDni"></span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><strong>Teléfono:</strong> <span id="pacienteTelefono"></span></p>
+                                            <p class="mb-1"><strong>Fecha Nacimiento:</strong> <span id="pacienteFechaNac"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección: Información Médica -->
+                            <div class="form-section">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="bi bi-stethoscope"></i> Información Médica
+                                </h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="especialidadId" class="form-label">
+                                            Especialidad <span class="required">*</span>
+                                        </label>
+                                        <select class="form-select" id="especialidadId" required>
+                                            <option value="">Seleccione una especialidad</option>
+                                            <option th:each="especialidad : ${especialidades}" 
+                                                    th:value="${especialidad.idEspecialidad}"
+                                                    th:text="${especialidad.nombreEspecialidad}">
+                                                Cardiología
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="medicoId" class="form-label">
+                                            Médico <span class="required">*</span>
+                                        </label>
+                                        <select class="form-select" id="medicoId" name="medicoId" required disabled>
+                                            <option value="">Primero seleccione una especialidad</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección: Fecha y Hora -->
+                            <div class="form-section">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="bi bi-calendar"></i> Fecha y Hora
+                                </h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="fecha" class="form-label">
+                                            Fecha <span class="required">*</span>
+                                        </label>
+                                        <input type="date" class="form-control" id="fecha" name="fecha" required>
+                                        <small class="form-text text-muted">No se permiten citas los domingos</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="hora" class="form-label">
+                                            Hora <span class="required">*</span>
+                                        </label>
+                                        <input type="time" class="form-control" id="hora" name="hora" required>
+                                        <small class="form-text text-muted">Horario de atención: 08:00 - 18:00</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="consultorioId" class="form-label">
+                                            Consultorio <span class="required">*</span>
+                                        </label>
+                                        <select class="form-select" id="consultorioId" name="consultorioId" required>
+                                            <option value="">Seleccione un consultorio</option>
+                                            <option th:each="consultorio : ${consultorios}" 
+                                                    th:value="${consultorio.idConsultorio}"
+                                                    th:text="${'Consultorio ' + consultorio.numeroConsultorio + ' - ' + consultorio.ubicacion}">
+                                                Consultorio 101 - Primer Piso
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Verificación de disponibilidad -->
+                                <div id="disponibilidadInfo" class="mt-3" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i>
+                                        <span id="disponibilidadTexto"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección: Detalles de la Cita -->
+                            <div class="form-section">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="bi bi-clipboard"></i> Detalles de la Cita
+                                </h6>
+                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        <label for="motivo" class="form-label">
+                                            Motivo de la Consulta <span class="required">*</span>
+                                        </label>
+                                        <textarea class="form-control" id="motivo" name="motivo" rows="3" 
+                                                  th:field="*{motivo}" required
+                                                  placeholder="Describa brevemente el motivo de la consulta..."></textarea>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('motivo')}" th:errors="*{motivo}"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botones -->
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="/secretario/citas" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary" id="btnGuardar">
+                                    <i class="bi bi-check-circle"></i> Programar Cita
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const especialidadSelect = document.getElementById('especialidadId');
+            const medicoSelect = document.getElementById('medicoId');
+            const pacienteSelect = document.getElementById('pacienteId');
+            const buscarDniInput = document.getElementById('buscarDni');
+            const btnBuscarDni = document.getElementById('btnBuscarDni');
+            const pacienteInfo = document.getElementById('pacienteInfo');
+            const fechaInput = document.getElementById('fecha');
+            const horaInput = document.getElementById('hora');
+            const disponibilidadInfo = document.getElementById('disponibilidadInfo');
+            
+            // Establecer fecha mínima (hoy)
+            const today = new Date().toISOString().split('T')[0];
+            fechaInput.min = today;
+            
+            // Buscar paciente por DNI
+            btnBuscarDni.addEventListener('click', function() {
+                const dni = buscarDniInput.value.trim();
+                if (dni.length === 8) {
+                    fetch(`/secretario/pacientes/buscar-dni?dni=${dni}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data) {
+                                // Seleccionar el paciente en el select
+                                pacienteSelect.value = data.idPaciente;
+                                mostrarInfoPaciente(data);
+                            } else {
+                                alert('No se encontró un paciente con ese DNI');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error al buscar el paciente');
+                        });
+                } else {
+                    alert('Ingrese un DNI válido de 8 dígitos');
+                }
+            });
+            
+            // Mostrar información del paciente seleccionado
+            pacienteSelect.addEventListener('change', function() {
+                if (this.value) {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const text = selectedOption.text;
+                    const parts = text.split(' - DNI: ');
+                    const nombre = parts[0];
+                    const dni = parts[1];
+                    
+                    document.getElementById('pacienteNombre').textContent = nombre;
+                    document.getElementById('pacienteDni').textContent = dni;
+                    document.getElementById('pacienteTelefono').textContent = 'N/A';
+                    document.getElementById('pacienteFechaNac').textContent = 'N/A';
+                    
+                    pacienteInfo.style.display = 'block';
+                } else {
+                    pacienteInfo.style.display = 'none';
+                }
+            });
+            
+            function mostrarInfoPaciente(paciente) {
+                document.getElementById('pacienteNombre').textContent = 
+                    `${paciente.persona.nombre} ${paciente.persona.apellidoPaterno} ${paciente.persona.apellidoMaterno}`;
+                document.getElementById('pacienteDni').textContent = paciente.persona.dni;
+                document.getElementById('pacienteTelefono').textContent = paciente.persona.telefono || 'N/A';
+                document.getElementById('pacienteFechaNac').textContent = 
+                    paciente.persona.fechaNacimiento ? new Date(paciente.persona.fechaNacimiento).toLocaleDateString() : 'N/A';
+                
+                pacienteInfo.style.display = 'block';
+            }
+            
+            // Cargar médicos por especialidad
+            especialidadSelect.addEventListener('change', function() {
+                const especialidadId = this.value;
+                medicoSelect.innerHTML = '<option value="">Cargando médicos...</option>';
+                medicoSelect.disabled = true;
+                
+                if (especialidadId) {
+                    fetch(`/secretario/medicos/por-especialidad?especialidadId=${especialidadId}`)
+                        .then(response => response.json())
+                        .then(medicos => {
+                            medicoSelect.innerHTML = '<option value="">Seleccione un médico</option>';
+                            medicos.forEach(medico => {
+                                const option = document.createElement('option');
+                                option.value = medico.idMedico;
+                                option.textContent = `Dr. ${medico.persona.nombre} ${medico.persona.apellidoPaterno} - Col. ${medico.numeroColegiatura}`;
+                                medicoSelect.appendChild(option);
+                            });
+                            medicoSelect.disabled = false;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            medicoSelect.innerHTML = '<option value="">Error al cargar médicos</option>';
+                        });
+                } else {
+                    medicoSelect.innerHTML = '<option value="">Primero seleccione una especialidad</option>';
+                    medicoSelect.disabled = true;
+                }
+            });
+            
+            // Verificar disponibilidad
+            function verificarDisponibilidad() {
+                const medicoId = medicoSelect.value;
+                const fecha = fechaInput.value;
+                const hora = horaInput.value;
+                
+                if (medicoId && fecha && hora) {
+                    fetch(`/secretario/medicos/${medicoId}/disponibilidad?fecha=${fecha}&hora=${hora}`)
+                        .then(response => response.json())
+                        .then(disponible => {
+                            const info = document.getElementById('disponibilidadTexto');
+                            const alert = disponibilidadInfo.querySelector('.alert');
+                            
+                            if (disponible) {
+                                alert.className = 'alert alert-success';
+                                info.innerHTML = '<i class="bi bi-check-circle"></i> El médico está disponible en esta fecha y hora';
+                            } else {
+                                alert.className = 'alert alert-warning';
+                                info.innerHTML = '<i class="bi bi-exclamation-triangle"></i> El médico no está disponible en esta fecha y hora';
+                            }
+                            
+                            disponibilidadInfo.style.display = 'block';
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                } else {
+                    disponibilidadInfo.style.display = 'none';
+                }
+            }
+            
+            medicoSelect.addEventListener('change', verificarDisponibilidad);
+            fechaInput.addEventListener('change', verificarDisponibilidad);
+            horaInput.addEventListener('change', verificarDisponibilidad);
+            
+            // Validar que no sea domingo
+            fechaInput.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                if (selectedDate.getDay() === 0) { // 0 = Domingo
+                    alert('No se pueden programar citas los domingos');
+                    this.value = '';
+                }
+            });
+            
+            // Validar horario de atención
+            horaInput.addEventListener('change', function() {
+                const hora = this.value;
+                if (hora < '08:00' || hora > '18:00') {
+                    alert('El horario de atención es de 08:00 a 18:00');
+                    this.value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pacientes - Secretario | Sana Corp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .nav-link {
+            color: #495057;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .search-section {
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .table-responsive {
+            border-radius: 0.375rem;
+            overflow: hidden;
+        }
+        .badge-activo {
+            background-color: #198754;
+        }
+        .badge-inactivo {
+            background-color: #6c757d;
+        }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5 class="text-primary">
+                            <i class="bi bi-hospital"></i> Sana Corp
+                        </h5>
+                        <small class="text-muted">Módulo Secretario</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/dashboard">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/citas">
+                                <i class="bi bi-calendar-check"></i> Gestión de Citas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/secretario/pacientes">
+                                <i class="bi bi-people"></i> Gestión de Pacientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/citas/nueva">
+                                <i class="bi bi-plus-circle"></i> Nueva Cita
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/secretario/pacientes/nuevo">
+                                <i class="bi bi-person-plus"></i> Nuevo Paciente
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-people"></i> Gestión de Pacientes
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a href="/secretario/pacientes/nuevo" class="btn btn-primary">
+                                <i class="bi bi-person-plus"></i> Nuevo Paciente
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertas -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Sección de búsqueda -->
+                <div class="search-section">
+                    <h5 class="mb-3">
+                        <i class="bi bi-search"></i> Buscar Pacientes
+                    </h5>
+                    <form method="get" th:action="@{/secretario/pacientes}">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="busqueda" class="form-label">Buscar por nombre o DNI</label>
+                                <input type="text" class="form-control" id="busqueda" name="busqueda" 
+                                       th:value="${param.busqueda}" placeholder="Nombre, apellido o DNI">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="estado" class="form-label">Estado</label>
+                                <select class="form-select" id="estado" name="estado">
+                                    <option value="">Todos</option>
+                                    <option value="true" th:selected="${param.estado == 'true'}">Activos</option>
+                                    <option value="false" th:selected="${param.estado == 'false'}">Inactivos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="genero" class="form-label">Género</label>
+                                <select class="form-select" id="genero" name="genero">
+                                    <option value="">Todos</option>
+                                    <option value="M" th:selected="${param.genero == 'M'}">Masculino</option>
+                                    <option value="F" th:selected="${param.genero == 'F'}">Femenino</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary" th:text="${totalPacientes}">0</h5>
+                                <p class="card-text">Total Pacientes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-success" th:text="${pacientesActivos}">0</h5>
+                                <p class="card-text">Pacientes Activos</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-info" th:text="${pacientesConAlergias}">0</h5>
+                                <p class="card-text">Con Alergias</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-warning" th:text="${pacientesRegistradosHoy}">0</h5>
+                                <p class="card-text">Registrados Hoy</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de pacientes -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list"></i> Lista de Pacientes
+                            <span class="badge bg-secondary ms-2" th:text="${#lists.size(pacientes)}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>DNI</th>
+                                        <th>Nombre Completo</th>
+                                        <th>Fecha Nacimiento</th>
+                                        <th>Género</th>
+                                        <th>Teléfono</th>
+                                        <th>Estado</th>
+                                        <th>Fecha Registro</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(pacientes)}">
+                                        <td colspan="9" class="text-center py-4">
+                                            <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mt-2">No se encontraron pacientes</p>
+                                        </td>
+                                    </tr>
+                                    <tr th:each="paciente : ${pacientes}">
+                                        <td th:text="${paciente.idPaciente}">1</td>
+                                        <td>
+                                            <strong th:text="${paciente.persona.dni}">12345678</strong>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong th:text="${paciente.persona.nombre + ' ' + paciente.persona.apellidoPaterno + ' ' + paciente.persona.apellidoMaterno}">
+                                                    Juan Pérez García
+                                                </strong>
+                                                <br>
+                                                <small class="text-muted" th:text="${paciente.persona.email}">juan@email.com</small>
+                                            </div>
+                                        </td>
+                                        <td th:text="${#temporals.format(paciente.persona.fechaNacimiento, 'dd/MM/yyyy')}">01/01/1990</td>
+                                        <td>
+                                            <span th:if="${paciente.persona.genero == 'M'}" class="badge bg-primary">Masculino</span>
+                                            <span th:if="${paciente.persona.genero == 'F'}" class="badge bg-info">Femenino</span>
+                                        </td>
+                                        <td th:text="${paciente.persona.telefono}">987654321</td>
+                                        <td>
+                                            <span th:if="${paciente.activo}" class="badge badge-activo">Activo</span>
+                                            <span th:unless="${paciente.activo}" class="badge badge-inactivo">Inactivo</span>
+                                        </td>
+                                        <td th:text="${#temporals.format(paciente.fechaRegistro, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:30</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{/secretario/pacientes/{id}(id=${paciente.idPaciente})}" 
+                                                   class="btn btn-outline-primary btn-sm" title="Ver detalles">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a th:href="@{/secretario/citas/nueva?pacienteId={id}(id=${paciente.idPaciente})}" 
+                                                   class="btn btn-outline-success btn-sm" title="Nueva cita">
+                                                    <i class="bi bi-calendar-plus"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-info btn-sm" 
+                                                        th:onclick="'verHistorial(' + ${paciente.idPaciente} + ')'" title="Ver historial">
+                                                    <i class="bi bi-clock-history"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paginación (si es necesaria) -->
+                <nav aria-label="Navegación de páginas" th:if="${totalPages > 1}">
+                    <ul class="pagination justify-content-center mt-4">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/secretario/pacientes(page=${currentPage - 1}, busqueda=${param.busqueda}, estado=${param.estado}, genero=${param.genero})}">
+                                Anterior
+                            </a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/secretario/pacientes(page=${i}, busqueda=${param.busqueda}, estado=${param.estado}, genero=${param.genero})}" 
+                               th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/secretario/pacientes(page=${currentPage + 1}, busqueda=${param.busqueda}, estado=${param.estado}, genero=${param.genero})}">
+                                Siguiente
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal para ver historial -->
+    <div class="modal fade" id="historialModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clock-history"></i> Historial de Citas
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="historialContent">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function verHistorial(pacienteId) {
+            const modal = new bootstrap.Modal(document.getElementById('historialModal'));
+            const content = document.getElementById('historialContent');
+            
+            // Mostrar loading
+            content.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Cargando historial...</p>
+                </div>
+            `;
+            
+            modal.show();
+            
+            // Cargar historial
+            fetch(`/secretario/pacientes/${pacienteId}/historial`)
+                .then(response => response.json())
+                .then(citas => {
+                    if (citas.length === 0) {
+                        content.innerHTML = `
+                            <div class="text-center">
+                                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-2">No hay citas registradas para este paciente</p>
+                            </div>
+                        `;
+                    } else {
+                        let html = '<div class="table-responsive"><table class="table table-sm">';
+                        html += '<thead><tr><th>Fecha</th><th>Hora</th><th>Médico</th><th>Especialidad</th><th>Estado</th><th>Motivo</th></tr></thead><tbody>';
+                        
+                        citas.forEach(cita => {
+                            const fecha = new Date(cita.fecha).toLocaleDateString();
+                            const hora = cita.hora;
+                            const medico = `Dr. ${cita.medico.persona.nombre} ${cita.medico.persona.apellidoPaterno}`;
+                            const especialidad = cita.medico.especialidad.nombreEspecialidad;
+                            let estadoBadge = '';
+                            
+                            switch(cita.estado) {
+                                case 'PROGRAMADA':
+                                    estadoBadge = '<span class="badge bg-primary">Programada</span>';
+                                    break;
+                                case 'CONFIRMADA':
+                                    estadoBadge = '<span class="badge bg-info">Confirmada</span>';
+                                    break;
+                                case 'COMPLETADA':
+                                    estadoBadge = '<span class="badge bg-success">Completada</span>';
+                                    break;
+                                case 'CANCELADA':
+                                    estadoBadge = '<span class="badge bg-danger">Cancelada</span>';
+                                    break;
+                                case 'NO_ASISTIO':
+                                    estadoBadge = '<span class="badge bg-warning">No Asistió</span>';
+                                    break;
+                            }
+                            
+                            html += `<tr>
+                                <td>${fecha}</td>
+                                <td>${hora}</td>
+                                <td>${medico}</td>
+                                <td>${especialidad}</td>
+                                <td>${estadoBadge}</td>
+                                <td>${cita.motivo || 'N/A'}</td>
+                            </tr>`;
+                        });
+                        
+                        html += '</tbody></table></div>';
+                        content.innerHTML = html;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    content.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Error al cargar el historial
+                        </div>
+                    `;
+                });
+        }
+        
+        // Auto-submit del formulario de búsqueda al cambiar los filtros
+        document.getElementById('estado').addEventListener('change', function() {
+            this.form.submit();
+        });
+        
+        document.getElementById('genero').addEventListener('change', function() {
+            this.form.submit();
+        });
+    </script>
+</body>
+</html>
