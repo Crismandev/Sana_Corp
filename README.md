@@ -329,9 +329,13 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 👨‍💻 Autor
 
-**Cristhian Mantilla** - *Desarrollador Full Stack*
+**Cristhian Mantilla** - *Desarrollador Full Stack en Proceso*
+**Misael Lara**
+**Wilder Tudela**
+**Kevin**
+
 - GitHub: [@Crismandev](https://github.com/Crismandev)
-- LinkedIn: [Cristhian Mantilla](https://linkedin.com/in/cristhian-mantilla)
+- LinkedIn: [Cristhian Mantilla](https://www.linkedin.com/in/crismandev/)
 
 ---
 
