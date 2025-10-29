@@ -5,8 +5,8 @@
     "buildCommand": "./mvnw clean package -DskipTests"
   },
   "deploy": {
-    "startCommand": "java -jar target/sana-corp-secretario-0.0.1-SNAPSHOT.jar",
-    "healthcheckPath": "/actuator/health",
+    "startCommand": "java -Dserver.port=$PORT -jar target/sana-corp-secretario-0.0.1-SNAPSHOT.jar",
+    "healthcheckPath": "/login",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10

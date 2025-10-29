@@ -6,7 +6,7 @@
 cmds = ["./mvnw clean package -DskipTests"]
 
 [phases.start]
-cmd = "java -jar target/sana-corp-secretario-0.0.1-SNAPSHOT.jar"
+cmd = "java -Dserver.port=$PORT -jar target/sana-corp-secretario-0.0.1-SNAPSHOT.jar"
 
 [variables]
 SPRING_PROFILES_ACTIVE = "prod"
